@@ -21,6 +21,7 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 
 * Xcode (latest version)
 * iOS Simulator or a physical iOS device
+* Sauce Labs account with access to the Real Device Cloud and Mobile App Distribution features
 
 ### Installation
 
