@@ -20,9 +20,9 @@ platform :ios do
   lane :custom_lane do
     # add actions here: https://docs.fastlane.tools/actions
     testfairy(
-      api_key: ENV['TF_API_KEY'],
+      api_key: ENV['TF_ACCESS_KEY'],
       ipa: "<project_dir>/MobileBank.ipa",
-      comment: "Uploaded version 1.2",
+      comment: "Add details about this release",
       landing_page_mode: "closed"
       )
   end

@@ -11,6 +11,7 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 
 ## Features (Initial Release)
 
+* **User Authentication:** Basic login/logout functionality.
 * **Account Summary:** Display account balance and transaction history.
 * **Funds Transfer:** Initiate transfers between accounts.
 * **Simple UI:** Clean and intuitive interface for ease of use.
@@ -21,7 +22,6 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 
 * Xcode (latest version)
 * iOS Simulator or a physical iOS device
-* Sauce Labs account with access to the Real Device Cloud and Mobile App Distribution features
 
 ### Installation
 
@@ -43,13 +43,12 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 4.  **Upload the app to Sauce Labs for testing on the Real Device Cloud:**
 
     Uploading to Sauce Labs App Storage allows you to test your app across a wide variety of iOS devices in the Real Device Cloud.
-    ```bash
+
     curl -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" --location \
     --request POST 'https://api.us-west-1.saucelabs.com/v1/storage/upload' \
     --form 'payload=@"./MobileBank.ipa"' \
     --form 'name="MobileBank.ipa"' \
     --form 'description="Mobile Bank App"'
-    ```
 
 5.  **Distribute via Sauce Mobile App Distribution:**
 
@@ -74,4 +73,16 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
     -F notify=on | jq
     ```
 
+6.  **Distribute via fastlane:**
+
+    Install fastlane: https://docs.fastlane.tools/getting-started/ios/setup/
+    
+    Update the Fastfile file under /MobileBank/fastlane/Fastfile with the details relevant to your environment. 
+    
+    Then run the following command:
+    ```bash
+    fastlane ios custom_lane
+    ```
+
+    Follow the onscreen instructions. 
     
