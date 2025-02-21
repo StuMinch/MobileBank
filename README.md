@@ -43,12 +43,13 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 4.  **Upload the app to Sauce Labs for testing on the Real Device Cloud:**
 
     Uploading to Sauce Labs App Storage allows you to test your app across a wide variety of iOS devices in the Real Device Cloud.
-
+    ```bash
     curl -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" --location \
     --request POST 'https://api.us-west-1.saucelabs.com/v1/storage/upload' \
     --form 'payload=@"./MobileBank.ipa"' \
     --form 'name="MobileBank.ipa"' \
     --form 'description="Mobile Bank App"'
+    ```
 
 5.  **Distribute via Sauce Mobile App Distribution:**
 
