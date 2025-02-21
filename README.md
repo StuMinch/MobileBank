@@ -11,7 +11,6 @@ Welcome to MobileBank, an open-source iOS application designed to provide a real
 
 ## Features (Initial Release)
 
-* **User Authentication:** Basic login/logout functionality.
 * **Account Summary:** Display account balance and transaction history.
 * **Funds Transfer:** Initiate transfers between accounts.
 * **Simple UI:** Clean and intuitive interface for ease of use.
