@@ -6,8 +6,6 @@
 //
 import SwiftUI
 
-import SwiftUI
-
 struct AccountBalances: Codable, Identifiable, Equatable {
     let id = UUID()
     var name: String

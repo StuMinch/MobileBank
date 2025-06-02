@@ -13,9 +13,17 @@ struct MoreView: View {
                 NavigationLink(destination: Text("Settings View")) {
                     Text("Settings")
                 }
+                NavigationLink(destination: MapView()) { // Navigate to MapView
+                    Text("Branch Locator")
+                }
                 // Add more options (profile, help, etc.)
             }
             .navigationTitle("More")
         }
     }
 }
+
+#Preview {
+    MoreView()
+}
+
