@@ -2,63 +2,117 @@
 //  DepositCheckView.swift
 //  MobileBank
 //
-//  Created by Stuart Minchington on 12/28/24.
+//  Created by Stuart Minchington on 12/1/25.
 //
 import SwiftUI
-import AVFoundation
 import UIKit
 
+// MARK: - DepositCheckView (The Main Deposit Screen)
+
 struct DepositCheckView: View {
-    @State private var isShowingCamera = false
+    @Environment(\.dismiss) var dismiss // Modern way to dismiss the sheet
     @State private var inputImage: UIImage?
+    @State private var isShowingCamera = false
+    @State private var depositAmount: String = ""
+    @State private var selectedAccountIndex = 0
+    
+    let primaryBankColor = Color(red: 0.0, green: 86.0/255.0, blue: 145.0/255.0)
 
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Deposit a Check")
-                if let image = inputImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 300)
-                } else {
-                    Image(systemName: "camera")
-                        .font(.system(size: 100))
-                        .foregroundColor(.gray)
+            Form {
+                // Section 1: Account and Amount
+                Section(header: Text("Deposit Details")) {
+                    Picker("Deposit To", selection: $selectedAccountIndex) {
+                        ForEach(MockData.accounts.indices, id: \.self) { index in
+                            Text(MockData.accounts[index].name)
+                        }
+                    }
+                    HStack {
+                        Text("Amount")
+                        Spacer()
+                        TextField("0.00", text: $depositAmount)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .font(.title3.weight(.semibold))
+                    }
                 }
-                Button("Take Photo") {
-                    isShowingCamera = true
+                
+                // Section 2: Check Photo
+                Section(header: Text("Check Photo (Front)")) {
+                    VStack {
+                        if let image = inputImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 150)
+                                .cornerRadius(8)
+                        } else {
+                            Image(systemName: "photo.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(.gray)
+                                .padding()
+                        }
+                        
+                        Button {
+                            // Check if camera is available (it's not on a Mac simulator)
+                            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                                isShowingCamera = true
+                            } else {
+                                print("Camera not available. Use a device or change sourceType to .photoLibrary for simulator testing.")
+                            }
+                        } label: {
+                            Label("Take Photo", systemImage: "camera.fill")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(inputImage == nil ? Color(.systemGray5) : primaryBankColor)
+                                .foregroundColor(inputImage == nil ? .primary : .white)
+                                .cornerRadius(10)
+                        }
+                    }
+                }
+                
+                // Section 3: Deposit Button
+                Section {
+                    Button("Confirm Deposit") {
+                        // Prototype action
+                        print("Depositing $\(depositAmount) to \(MockData.accounts[selectedAccountIndex].name)")
+                        dismiss()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(primaryBankColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            }
+            .navigationTitle("Deposit Check")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
                 }
             }
             .sheet(isPresented: $isShowingCamera) {
-                ImagePicker(sourceType: .camera, selectedImage: $inputImage)
+                // Use the updated ImagePicker
+                ImagePicker(selectedImage: $inputImage)
             }
-            .navigationTitle("Deposit Check")
         }
     }
 }
 
+
+// MARK: - ImagePicker (Updated UIViewControllerRepresentable)
+
 struct ImagePicker: UIViewControllerRepresentable {
-    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: ImagePicker
-
-        init(parent: ImagePicker) {
-            self.parent = parent
-        }
-
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            parent.selectedImage = info[.originalImage] as? UIImage
-            parent.presentationMode.wrappedValue.dismiss()
-        }
-    }
-
-    var sourceType: UIImagePickerController.SourceType
+    // We are defaulting to .camera, but the user can change this for simulator testing.
+    var sourceType: UIImagePickerController.SourceType = .camera
     @Binding var selectedImage: UIImage?
-    @Environment(\.presentationMode) var presentationMode
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
-    }
+    // Use @Environment(\.dismiss) inside the Coordinator for modern dismissal
+    @Environment(\.dismiss) var dismiss
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -68,5 +122,28 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-}
 
+    func makeCoordinator() -> Coordinator {
+        Coordinator(selectedImage: $selectedImage, dismiss: dismiss)
+    }
+
+    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+        @Binding var selectedImage: UIImage?
+        var dismiss: DismissAction
+
+        init(selectedImage: Binding<UIImage?>, dismiss: DismissAction) {
+            _selectedImage = selectedImage
+            self.dismiss = dismiss
+        }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            // Use .originalImage for full resolution
+            selectedImage = info[.originalImage] as? UIImage
+            dismiss() // Use the modern dismissal action
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            dismiss()
+        }
+    }
+}
