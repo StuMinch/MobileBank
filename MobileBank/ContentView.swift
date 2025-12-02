@@ -7,18 +7,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    // ADD STATE TO TRACK THE ACTIVE TAB
+    
     @State private var selectedTab = 0
     
-    // Primary color palette based on Deep Blue (#005691)
+    // 1. Instantiate the observable manager
+    @State private var accountManager = AccountManager()
+    
     let primaryBankColor = Color(red: 0.0, green: 86.0/255.0, blue: 145.0/255.0)
 
     var body: some View {
-        // BIND STATE TO TABVIEW
         TabView(selection: $selectedTab) {
             
             // 1. Home (Dashboard)
-            // PASS THE BINDING DOWN
             HomeView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
@@ -32,7 +32,7 @@ struct ContentView: View {
                 }
                 .tag(1)
 
-            // 3. Transfer (Index 2)
+            // 3. Transfer
             TransferView()
                 .tabItem {
                     Label("Transfer", systemImage: "arrow.left.arrow.right.circle.fill")
@@ -54,6 +54,8 @@ struct ContentView: View {
                 .tag(4)
         }
         .accentColor(primaryBankColor)
+        // 2. Inject the manager into the environment
+        .environment(accountManager)
     }
 }
 

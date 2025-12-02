@@ -7,24 +7,64 @@
 import SwiftUI
 
 struct TransferView: View {
+    
+    // Access the shared account data
+    @Environment(AccountManager.self) var accountManager
+    
     let primaryBankColor = Color(red: 0.0, green: 86.0/255.0, blue: 145.0/255.0)
+    
     @State private var sourceAccountIndex = 0
     @State private var destinationAccountIndex = 1
-    @State private var amountString: String = "100.00"
+    @State private var amountString: String = ""
+    
+    // State for error/success feedback
+    @State private var showingAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+    
+    // Calculated property to check if the button should be enabled
+    var isTransferValid: Bool {
+        sourceAccountIndex != destinationAccountIndex &&
+        Double(amountString) != nil &&
+        (Double(amountString) ?? 0) > 0
+    }
+    
+    func attemptTransfer() {
+        let amount = Double(amountString) ?? 0.0
+        
+        let result = accountManager.performTransfer(
+            from: sourceAccountIndex,
+            to: destinationAccountIndex,
+            amount: amount
+        )
+        
+        alertTitle = result.success ? "Transfer Successful" : "Transfer Failed"
+        alertMessage = result.message
+        showingAlert = true
+        
+        // Clear amount on success
+        if result.success {
+            amountString = ""
+            // Reset account selections to ensure user reviews next transfer
+            sourceAccountIndex = 0
+            destinationAccountIndex = 1
+        }
+    }
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Transfer Details")) {
                     Picker("From Account", selection: $sourceAccountIndex) {
-                        ForEach(MockData.accounts.indices, id: \.self) { index in
-                            Text(MockData.accounts[index].name)
+                        // Use manager's accounts
+                        ForEach(accountManager.accounts.indices, id: \.self) { index in
+                            Text("\(accountManager.accounts[index].name) (Bal: \(accountManager.accounts[index].balance, format: .currency(code: "USD")))")
                         }
                     }
                     
                     Picker("To Account", selection: $destinationAccountIndex) {
-                        ForEach(MockData.accounts.indices, id: \.self) { index in
-                            Text(MockData.accounts[index].name)
+                        ForEach(accountManager.accounts.indices, id: \.self) { index in
+                            Text(accountManager.accounts[index].name)
                         }
                     }
                     
@@ -38,25 +78,32 @@ struct TransferView: View {
                     }
                 }
                 
-                Button(action: {
-                    // Action: Simulate Transfer (prototype)
-                    print("Transferring $\(amountString) from \(MockData.accounts[sourceAccountIndex].name) to \(MockData.accounts[destinationAccountIndex].name)")
-                }) {
-                    Text("Confirm Transfer")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(primaryBankColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                Section {
+                    Button(action: attemptTransfer) {
+                        Text("Confirm Transfer")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(isTransferValid ? primaryBankColor : Color(.systemGray4))
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
+                    // Disable button if validation fails
+                    .disabled(!isTransferValid)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
                 
-                Text("Note: This is a demonstration prototype. No actual funds will be transferred.")
+                Text("Note: This is a demonstration prototype. Transfers update mock balances only.")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
             .navigationTitle("Funds Transfer")
+            // Show alert for success/error
+            .alert(alertTitle, isPresented: $showingAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(alertMessage)
+            }
         }
     }
 }

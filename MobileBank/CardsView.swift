@@ -18,7 +18,8 @@ struct CardsView: View {
                     .foregroundColor(.gray)
                 
                 TabView {
-                    ForEach(MockData.cards) { card in
+                    // CHANGE THIS LINE: Use AccountManager.cards
+                    ForEach(AccountManager.cards) { card in
                         MockCardView(card: card)
                             .padding(.horizontal)
                     }

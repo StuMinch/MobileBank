@@ -8,37 +8,9 @@
 import SwiftUI
 
 struct HomeView: View {
-
-    struct QuickActionsBar: View {
-        @Binding var selectedTab: Int
-        @State private var isShowingDepositSheet = false // Add state for sheet presentation
-        
-        var body: some View {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 15) {
-                    QuickActionButton(icon: "arrow.up.arrow.down", text: "Transfer", action: {
-                        selectedTab = 2
-                    })
-                    QuickActionButton(icon: "dollarsign.circle", text: "Pay Bill", action: {})
-                    
-                    // UPDATE THE DEPOSIT ACTION
-                    QuickActionButton(icon: "camera.fill", text: "Deposit", action: {
-                        isShowingDepositSheet = true // Toggle state to show sheet
-                    })
-                    .sheet(isPresented: $isShowingDepositSheet) {
-                        // Present the new DepositCheckView
-                        DepositCheckView()
-                    }
-                    
-                    QuickActionButton(icon: "chart.bar.fill", text: "Budget", action: {})
-                }
-                .padding(.vertical, 10)
-            }
-        }
-    }
-    
-    // ACCEPT THE BINDING
     @Binding var selectedTab: Int
+    // Access the shared account data
+    @Environment(AccountManager.self) var accountManager
     
     let primaryBankColor = Color(red: 0.0, green: 86.0/255.0, blue: 145.0/255.0)
     
@@ -50,7 +22,8 @@ struct HomeView: View {
                     Text("Total Balance")
                         .font(.headline)
                         .foregroundColor(.gray)
-                    Text(MockData.totalBalance, format: .currency(code: "USD"))
+                    // Use manager's calculated property
+                    Text(accountManager.totalBalance, format: .currency(code: "USD"))
                         .font(.system(size: 40, weight: .bold, design: .rounded))
                         .foregroundColor(primaryBankColor)
                 }
@@ -63,14 +36,14 @@ struct HomeView: View {
                 VStack(alignment: .leading) {
                     Text("Quick Actions")
                         .font(.headline)
-                    // PASS THE BINDING DOWN
                     QuickActionsBar(selectedTab: $selectedTab)
                 }
                 .listRowSeparator(.hidden)
 
                 // Accounts List
                 Section(header: Text("My Accounts")) {
-                    ForEach(MockData.accounts) { account in
+                    // Use manager's accounts
+                    ForEach(accountManager.accounts) { account in
                         AccountRow(account: account, primaryColor: primaryBankColor)
                     }
                 }
@@ -128,7 +101,7 @@ struct QuickActionButton: View {
 
 struct AccountRow: View {
     // CORRECTED TYPE: singular Account
-    let account: Accounts
+    let account: Account
     let primaryColor: Color
     
     var body: some View {
