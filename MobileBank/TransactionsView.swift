@@ -8,13 +8,17 @@
 import SwiftUI
 
 struct TransactionsView: View {
+    // ACCESS THE SHARED ACCOUNT MANAGER
+    @Environment(AccountManager.self) var accountManager
+    
     let primaryBankColor = Color(red: 0.0, green: 86.0/255.0, blue: 145.0/255.0)
     
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Recent Activity")) {
-                    ForEach(MockData.transactions) { transaction in
+                    // USE MANAGER'S TRANSACTIONS
+                    ForEach(accountManager.transactions) { transaction in
                         TransactionRow(transaction: transaction)
                     }
                 }

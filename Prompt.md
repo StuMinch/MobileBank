@@ -1,39 +1,34 @@
-**GOAL:** Generate a complete, multi-file SwiftUI iOS application for a modern Mobile Banking Prototype. The prototype must accurately reflect a professional banking UI/UX and include functional demonstration of inter-tab navigation and camera integration for deposit.
+**GOAL:** Generate a complete, multi-file SwiftUI iOS application for a modern Mobile Banking Prototype. The prototype must include functional inter-account fund transfers with input validation and **real-time balance and activity feed updates**.
 
 **TECHNOLOGY & CONSTRAINTS:**
 1.  **Language/Framework:** SwiftUI (iOS 17+ compatible).
-2.  **File Structure:** The code must be cleanly separated into multiple Swift files for each major view/model (e.g., `HomeView.swift`, `TransferView.swift`, `MockData.swift`, `DepositCheckView.swift`).
-3.  **Data:** Use static, mocked data (structs and arrays) defined exclusively in `MockData.swift`. No real-time data or persistence.
-4.  **Navigation:** The primary navigation MUST be a `TabView` structure, with the main `ContentView` managing the tab selection state via a **Binding** to enable deep linking/inter-tab navigation.
+2.  **Data Management:** Account data and **Transaction Data** must be managed by a single **`@Observable class`** (e.g., `AccountManager`) which is injected into the SwiftUI environment to enable **real-time updates** across views.
+3.  **File Structure:** The code must be cleanly separated into multiple Swift files for each major view/model.
+4.  **Data Persistence:** Mock data only.
 
 **CORE FUNCTIONALITY & SCREENS (The 5-Tab Structure):**
 The app must be structured around a `TabView` with five distinct tags (0 through 4):
 
 | Tab Index | Screen/File | Required Functionality |
 | :---: | :--- | :--- |
-| **0** | **HomeView.swift** | Displays Total Balance, Account List, and Quick Actions. **CRITICAL:** Quick Action "Deposit" and "Transfer" must navigate away from this tab. |
-| **1** | **TransactionsView.swift** | Scrollable, grouped list of recent mock transactions. |
-| **2** | **TransferView.swift** | View allowing selection of Source/Destination Accounts and Amount input. This is the destination for the Home tab's Transfer quick action. |
+| **0** | **HomeView.swift** | Displays Total Balance and Account List, dynamically pulled from the `@Observable AccountManager`. |
+| **1** | **TransactionsView.swift** | **CRITICAL:** Displays the live transaction list from the `AccountManager`. New transfer entries must appear at the top immediately upon successful transfer. |
+| **2** | **TransferView.swift** | Implements the transfer logic, updates the `AccountManager`'s balances, and **triggers transaction logging**. |
 | **3** | **CardsView.swift** | Horizontally scrollable view of mock Credit/Debit Cards. |
 | **4** | **MoreView.swift** | Simple `List` view for mock settings/profile links. |
 
 **ENHANCEMENTS & INTERACTIONS (CRITICAL UPDATES):**
 
-1.  **Quick Action Deep Link:** The **"Transfer"** Quick Action button in `HomeView` must programmatically set the main `TabView`'s selection to **Index 2 (`TransferView`)**.
-2.  **Mobile Check Deposit:** The **"Deposit"** Quick Action button in `HomeView` must present a **Sheet** containing the `DepositCheckView`.
-    * **DepositCheckView.swift** must use a `UIViewControllerRepresentable` (like `ImagePicker`) to access the **iOS camera** (`.camera` source type) for image capture.
-    * The view must include fields for **Deposit Account selection** and **Amount entry**.
+1.  **Functional Transfer Logic:**
+    * The `AccountManager` must contain a function (`performTransfer`) to handle the mutation of account balances.
+    * **Transaction Logging:** Upon successful transfer, `performTransfer` must **log two new entries** to the observable transactions list: a negative entry for the source account and a positive entry for the destination account.
+2.  **Transfer Validation & Error Handling:** The transfer must include checks for insufficient funds, invalid amounts, and same-account transfers, displaying an **Alert** upon failure.
+3.  **Quick Action Deep Link:** The **"Transfer"** Quick Action in `HomeView` must programmatically set the main `TabView`'s selection to **Index 2 (`TransferView`)**.
+4.  **Mobile Check Deposit:** The **"Deposit"** Quick Action button in `HomeView` must present a **Sheet** containing the `DepositCheckView` (which uses `UIViewControllerRepresentable` for camera access).
 
 **AESTHETICS & UX:**
 * **Design Theme:** Clean, modern, professional banking theme (Deep Blue `#005691` and gray/white palette).
-* **UX Elements:** Use rounded corners (radius 10-16), subtle shadows, and native **SF Symbols** for all icons.
-* **Dismissal:** All presented sheets (like `DepositCheckView`) must utilize the modern `@Environment(\.dismiss)` for cancellation/completion.
+* **Real-time Feedback:** Balances on the `HomeView` and entries on the `TransactionsView` must update immediately after a successful transfer.
 
 **MOCK DATA STRUCTURE (REQUIRED STRUCTS):**
-Define the following Swift structs in `MockData.swift`: `Account`, `Transaction`, and `Card`.
-
-**FINAL OUTPUT CHECKLIST:**
-* All files compile and views render correctly.
-* The `TabView` controls the app's root navigation.
-* The 'Transfer' quick action correctly switches tabs.
-* The 'Deposit' quick action correctly presents the camera-based deposit interface.
+Define the following Swift structs in a `Models.swift` file: `Account`, `Transaction`, and `Card`.

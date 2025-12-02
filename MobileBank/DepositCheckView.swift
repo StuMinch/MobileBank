@@ -10,7 +10,10 @@ import UIKit
 // MARK: - DepositCheckView (The Main Deposit Screen)
 
 struct DepositCheckView: View {
-    @Environment(\.dismiss) var dismiss // Modern way to dismiss the sheet
+    // 1. ACCESS THE SHARED ACCOUNT MANAGER
+    @Environment(AccountManager.self) var accountManager
+    @Environment(\.dismiss) var dismiss
+    
     @State private var inputImage: UIImage?
     @State private var isShowingCamera = false
     @State private var depositAmount: String = ""
@@ -24,8 +27,9 @@ struct DepositCheckView: View {
                 // Section 1: Account and Amount
                 Section(header: Text("Deposit Details")) {
                     Picker("Deposit To", selection: $selectedAccountIndex) {
-                        ForEach(MockData.accounts.indices, id: \.self) { index in
-                            Text(MockData.accounts[index].name)
+                        // 2. USE accountManager.accounts
+                        ForEach(accountManager.accounts.indices, id: \.self) { index in
+                            Text(accountManager.accounts[index].name)
                         }
                     }
                     HStack {
@@ -75,8 +79,12 @@ struct DepositCheckView: View {
                 // Section 3: Deposit Button
                 Section {
                     Button("Confirm Deposit") {
-                        // Prototype action
-                        print("Depositing $\(depositAmount) to \(MockData.accounts[selectedAccountIndex].name)")
+                        // 3. Update prototype action to use the manager for logging
+                        print("Depositing $\(depositAmount) to \(accountManager.accounts[selectedAccountIndex].name)")
+                        
+                        // NOTE: For a functional prototype, you would add a method to AccountManager here
+                        // to actually update the balance, similar to performTransfer.
+                        
                         dismiss()
                     }
                     .frame(maxWidth: .infinity)
@@ -105,13 +113,11 @@ struct DepositCheckView: View {
 }
 
 
-// MARK: - ImagePicker (Updated UIViewControllerRepresentable)
+// MARK: - ImagePicker (Updated UIViewControllerRepresentable - No change needed here)
 
 struct ImagePicker: UIViewControllerRepresentable {
-    // We are defaulting to .camera, but the user can change this for simulator testing.
     var sourceType: UIImagePickerController.SourceType = .camera
     @Binding var selectedImage: UIImage?
-    // Use @Environment(\.dismiss) inside the Coordinator for modern dismissal
     @Environment(\.dismiss) var dismiss
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
@@ -137,9 +143,8 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
 
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            // Use .originalImage for full resolution
             selectedImage = info[.originalImage] as? UIImage
-            dismiss() // Use the modern dismissal action
+            dismiss()
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
